@@ -8,43 +8,43 @@ CREATE EXTENSION diskquota;
 CREATE ROLE test_duplicate_role;
 ALTER ROLE test_duplicate_role WITH SUPERUSER;
 
-select diskquota.init_table_size_table();
+SELECT diskquota.init_table_size_table();
 
 BEGIN;
 
 SELECT diskquota.set_role_tablespace_quota('test_duplicate_role', 'pg_default', '100MB');
 SET ROLE test_duplicate_role;
 CREATE SCHEMA IF NOT EXISTS test_schema;
-CREATE table  table1 AS SELECT generate_series(1,1000) as id;
+CREATE TABLE  table1 AS SELECT generate_series(1,1000) AS id;
 RESET ROLE;
 
 SELECT role_name FROM diskquota.show_fast_role_tablespace_quota_view
 WHERE role_name = 'test_duplicate_role';
 
-select pg_sleep(1);
+SELECT pg_sleep(1);
 
 SELECT role_name FROM diskquota.show_fast_role_tablespace_quota_view
 WHERE role_name = 'test_duplicate_role';
 
-drop table table1;
+DROP TABLE table1;
 
 -- repeat all commands in transaction twice, because duplication causes at the second round.
 
 SELECT diskquota.set_role_tablespace_quota('test_duplicate_role', 'pg_default', '100MB');
 SET ROLE test_duplicate_role;
 CREATE SCHEMA IF NOT EXISTS test_schema;
-CREATE table  table1 AS SELECT generate_series(1,1000) as id;
+CREATE TABLE  table1 AS SELECT generate_series(1,1000) AS id;
 RESET ROLE;
 
 SELECT role_name FROM diskquota.show_fast_role_tablespace_quota_view
 WHERE role_name = 'test_duplicate_role';
 
-select pg_sleep(1);
+SELECT pg_sleep(1);
 
 SELECT role_name FROM diskquota.show_fast_role_tablespace_quota_view
 WHERE role_name = 'test_duplicate_role';
 
-drop table table1;
+DROP TABLE table1;
 
 ROLLBACK;
 
