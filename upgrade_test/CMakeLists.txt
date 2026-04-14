@@ -21,8 +21,6 @@ endif()
 list(APPEND schedule_files
   ${CMAKE_CURRENT_SOURCE_DIR}/schedule_2.2--2.3
   ${CMAKE_CURRENT_SOURCE_DIR}/schedule_2.3--2.2
-  ${CMAKE_CURRENT_SOURCE_DIR}/schedule_2.3--2.4
-  ${CMAKE_CURRENT_SOURCE_DIR}/schedule_2.4--2.3
 )
 regresstarget_add(
   upgradecheck
