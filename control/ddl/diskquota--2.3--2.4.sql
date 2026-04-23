@@ -26,31 +26,27 @@ WITH
     SELECT dattablespace FROM pg_database
     WHERE datname = current_database()
   ),
-  all_sizes AS (
-  SELECT
+  quota_usage AS (
+    SELECT
       relowner,
       CASE
         WHEN reltablespace = 0 THEN dattablespace
         ELSE reltablespace
       END AS reltablespace,
-      size
+      SUM(size) AS total_size
     FROM
       diskquota.table_size,
       diskquota.show_all_relation_view,
       default_tablespace
     WHERE
       tableid = diskquota.show_all_relation_view.oid AND
-      segid = -1),
-  quota_usage AS (
-    SELECT
-      relowner,
-      reltablespace,
-      SUM(size) AS total_size
-    FROM
-      all_sizes
+      segid = -1
     GROUP BY
       relowner,
-      reltablespace
+      CASE
+        WHEN reltablespace = 0 THEN dattablespace
+        ELSE reltablespace
+      END
   ),
   full_quota_config AS (
     SELECT
