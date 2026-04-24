@@ -48,3 +48,4 @@ test: test_drop_any_extension
 test: test_clean_config_tables
 test: test_drop_extension
 test: reset_config
+test: bfv_show_fast_role_tablespace_view
