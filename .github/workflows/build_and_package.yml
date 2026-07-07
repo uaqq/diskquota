@@ -1,0 +1,50 @@
+# .github/workflows/build_and_package.yml
+name: Build and Package DEB
+
+on:
+  push:
+    branches: ['master']
+    tags: ['**']
+  pull_request:
+    branches: ['**']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        # greengage7 is not yet published in the greengagedb.org apt repo
+        # ci/Dockerfile.ubuntu installs from, so only 6 is built here for now.
+        gp_version: [6]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ci/Dockerfile.ubuntu
+          push: false
+          tags: diskquota:gp${{ matrix.gp_version }}
+          build-args: GP_MAJORVERSION=${{ matrix.gp_version }}
+
+      - name: Extract artifacts
+        run: |
+          mkdir artifacts
+          docker create --name temp-container diskquota:gp${{ matrix.gp_version }}
+          docker cp temp-container:/diskquota/Package artifacts/
+          docker rm temp-container
+
+      - name: Upload deb packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: diskquota-deb-gp${{ matrix.gp_version }}
+          path: artifacts/Package/
