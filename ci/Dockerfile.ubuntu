@@ -10,9 +10,9 @@ FROM ubuntu:${OS_VERSION} AS base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG GP_MAJORVERSION=6
-ENV DEBIAN_FRONTEND=noninteractive
-ENV GREENGAGE_REPO_URL=https://greengagedb.org
-ENV GPHOME=/opt/greengagedb/greengage${GP_MAJORVERSION}
+ENV DEBIAN_FRONTEND=noninteractive \
+    GREENGAGE_REPO_URL=https://greengagedb.org \
+    GPHOME=/opt/greengagedb/greengage${GP_MAJORVERSION}
 ENV PATH=${GPHOME}/bin:${PATH}
 
 RUN set -eux; \
@@ -42,8 +42,8 @@ WORKDIR /diskquota
 COPY . .
 RUN git config --global --add safe.directory /diskquota
 
-RUN mkdir build && cd build && \
-    cmake .. -DPG_CONFIG="${GPHOME}/bin/pg_config" -DCMAKE_BUILD_TYPE=Release && \
+WORKDIR /diskquota/build
+RUN cmake .. -DPG_CONFIG="${GPHOME}/bin/pg_config" -DCMAKE_BUILD_TYPE=Release && \
     cmake --build . --target package_deb && \
     mkdir -p /diskquota/Package && \
     cp ./*.deb /diskquota/Package/

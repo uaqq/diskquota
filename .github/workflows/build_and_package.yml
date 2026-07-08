@@ -17,8 +17,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # greengage7 is not yet published in the greengagedb.org apt repo
-        # ci/Dockerfile.ubuntu installs from, so only 6 is built here for now.
         gp_version: [6]
     runs-on: ubuntu-24.04
     steps:
