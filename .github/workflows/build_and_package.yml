@@ -17,7 +17,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        gp_version: [6]
+        include:
+          - target_os: ubuntu
+            target_os_version: 22.04
+            gp_version: 6
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -32,7 +35,9 @@ jobs:
           file: ci/Dockerfile.ubuntu
           push: false
           tags: diskquota:gp${{ matrix.gp_version }}
-          build-args: GP_MAJORVERSION=${{ matrix.gp_version }}
+          build-args: |
+            GP_MAJORVERSION=${{ matrix.gp_version }}
+            OS_VERSION=${{ matrix.target_os_version }}
 
       - name: Extract artifacts
         run: |
@@ -44,5 +49,5 @@ jobs:
       - name: Upload deb packages
         uses: actions/upload-artifact@v7
         with:
-          name: diskquota-deb-gp${{ matrix.gp_version }}
+          name: deb-packages-diskquota${{ matrix.gp_version }}-${{ matrix.target_os }}${{ matrix.target_os_version }}
           path: artifacts/Package/
