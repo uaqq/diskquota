@@ -29,4 +29,4 @@ jobs:
           target_os:            ${{ matrix.target_os }}
           target_os_version:    ${{ matrix.target_os_version }}
           extensions:           ${{ matrix.extensions }}
-          artifact_prefix:      gpbackup-deb
+          artifact_prefix:      deb-packages-diskquota6
