@@ -38,8 +38,39 @@ endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror=clobbered ${PG_C_FLAGS}")
 
 # generate version
+# DISKQUOTA_VERSION is the extension's own SQL-schema version: it drives the .so
+# name (DISKQUOTA_BINARY_NAME below) and must match a real control/ddl/diskquota--X.Y.sql
+# file and diskquota.control's default_version, so it is intentionally NOT tied to
+# git tags/releases - it only ever comes from the VERSION file (or an explicit
+# -DDISKQUOTA_VERSION= override).
 if(NOT DEFINED DISKQUOTA_VERSION)
   file(STRINGS VERSION DISKQUOTA_VERSION)
+endif()
+
+# DISKQUOTA_PACKAGE_VERSION is the distribution/package version (used for
+# CPACK_PACKAGE_VERSION, i.e. the .deb version) - independent of DISKQUOTA_VERSION
+# above. Prefer the git release tag; fall back to DISKQUOTA_VERSION for local
+# builds with no tags (or pass -DDISKQUOTA_PACKAGE_VERSION= to override either).
+if(NOT DEFINED DISKQUOTA_PACKAGE_VERSION)
+  set(DISKQUOTA_PACKAGE_VERSION "")
+  if(GIT_EXECUTABLE)
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} describe --tags
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      OUTPUT_VARIABLE DISKQUOTA_GIT_DESCRIBE
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_QUIET
+      RESULT_VARIABLE DISKQUOTA_GIT_DESCRIBE_RESULT)
+    if(DISKQUOTA_GIT_DESCRIBE_RESULT EQUAL 0 AND DISKQUOTA_GIT_DESCRIBE)
+      # "1.2.2-3-gabcdef" (3 commits past tag 1.2.2) -> "1.2.2+dev.3.gabcdef".
+      # An exact tag (e.g. "1.2.2", no "-N-gHASH" suffix) is used as-is.
+      string(REGEX REPLACE "^(.*)-([0-9]+)-(g[0-9a-f]+)$" "\\1+dev.\\2.\\3"
+             DISKQUOTA_PACKAGE_VERSION "${DISKQUOTA_GIT_DESCRIBE}")
+    endif()
+  endif()
+  if(NOT DISKQUOTA_PACKAGE_VERSION)
+    set(DISKQUOTA_PACKAGE_VERSION "${DISKQUOTA_VERSION}")
+  endif()
 endif()
 
 string(REGEX REPLACE "^([0-9]+).[0-9]+.[0-9]+$" "\\1" DISKQUOTA_MAJOR_VERSION
@@ -139,7 +170,7 @@ set(tgz_NAME
 set(CPACK_GENERATOR "TGZ")
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
 set(CPACK_PACKAGE_FILE_NAME ${tgz_NAME})
-set(CPACK_PACKAGE_VERSION ${DISKQUOTA_VERSION})
+set(CPACK_PACKAGE_VERSION ${DISKQUOTA_PACKAGE_VERSION})
 # CPack's DEB/RPM generators default this to "/usr", ignoring CMAKE_INSTALL_PREFIX
 # (which tracks wherever the build's pg_config lives, e.g. a devel GPHOME used just
 # to compile against). The package itself must install to the path a real Greengage
