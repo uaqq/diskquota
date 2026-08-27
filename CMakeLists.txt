@@ -189,11 +189,7 @@ set(CPACK_DEBIAN_PACKAGE_SECTION "database")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "greengage${GP_MAJOR_VERSION}")
 set(CPACK_DEBIAN_PACKAGE_PROVIDES "diskquota")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_DEBIAN_PACKAGE_DESCRIPTION
-    "Diskquota extension for Greengage ${GP_MAJOR_VERSION}
- Diskquota is an extension that provides disk usage enforcement for
- database objects in Greengage DB. It supports setting quota limits on
- schemas and roles and limiting the amount of disk space they can use.")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Diskquota extension for Greengage ${GP_MAJOR_VERSION}\nDiskquota is an extension that provides disk usage enforcement for\ndatabase objects in Greengage DB. It supports setting quota limits on\nschemas and roles and limiting the amount of disk space they can use.")
 
 include(CPack)
 # create_artifact target is used to tar the package with version into a version-less tarball to be
